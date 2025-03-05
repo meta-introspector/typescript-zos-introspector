@@ -1,4 +1,4 @@
-# synapzeai-eliza-zos-introspector
+# typescript-zos-introspector
 
 To install dependencies:
 
