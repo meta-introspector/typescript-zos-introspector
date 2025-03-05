@@ -92,7 +92,6 @@ export namespace ModelToCdkParameters {
   }
 
 
-
   function ObjectSSM(hasParamName: string, paramName: string,  key:string, description:string): string {
       const paramName2 = ToCamelCase2("Agent_Param_"+key);
       
@@ -148,15 +147,34 @@ Conditions:
 ${conditionals.join("")}
 Resources:
 ${resources.join("")}
-`;        
-        fs.writeFileSync(`cloudformation/configure-additional-secrets/cloudformation-${className}.yml`, yamlContent);
-       //console.log(`Generated ${className}.yaml`); 
+`;
 
-        console.log(`module "deploy" {
-          source  = "../runbook"
-          runbook = "${className}"
-          patch   = local.patch
-        }`)
+
+	  const folderName =   `cloudformation/configure-additional-secrets/${className}`;
+	  try {
+	      if (!fs.existsSync(folderName)) {
+		  fs.mkdirSync(folderName);
+	      }
+	  } catch (err) {
+	      console.error(err);
+	  }
+	  const filename = `${folderName}/cloudformation-${className}.yml`;
+	  
+          fs.writeFileSync(filename, yamlContent);
+	  //console.log(`Generated ${className}.yaml`); 
+
+	  const tffile = `${folderName}/main.tf`;
+ 	  const contents = `
+ variable patch { default = "v1" }
+ module "deploy_${className}" {
+ source  = "../runbook"
+ runbook = "${className}"
+ patch   = var.patch
+ }
+`
+	  
+	  fs.writeFileSync(tffile,contents);
+          console.log(`module "deploy_${className}`)
         
         
       }
