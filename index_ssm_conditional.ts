@@ -1,5 +1,5 @@
 
-console.log("Hello via Bun!");
+
 import { TypescriptParser } from 'typescript-parser';
 const parser = new TypescriptParser();
 import * as Codegen from '@sinclair/typebox-codegen'
@@ -64,119 +64,6 @@ The MIT License (MIT)
 import * as Types from '@sinclair/typebox'
 import type { TypeBoxModel } from '@sinclair/typebox-codegen';
 
-// --------------------------------------------------------------------------
-// ModelToCdkParameters
-// --------------------------------------------------------------------------
-export namespace ModelToCdkParameters {
-  // Helper function to convert TypeBox type to CDK parameter config
-    function GetParameterConfig(schema: Types.TSchema, name: string) {
-
-	//console.log("debug",schema,name)
-      const config: Record<string, any> = {
-	  description: `Parameter for ${name}`
-      }
-      
-      //const isOptional = schema[Symbol.for('TypeBox.Optional')] === 'Optional'
-      
-      if (Types.TypeGuard.IsString(schema)) {
-	  config.type = 'String'
-	  if (schema.default) config.default = schema.default
-      }
-    else if (Types.TypeGuard.IsBoolean(schema)) {
-      config.type = 'String'
-      config.allowedValues = ['true', 'false']
-      config.default = schema.default !== undefined ? String(schema.default) : 'false'
-    }
-    else if (Types.TypeGuard.IsNumber(schema) || Types.TypeGuard.IsInteger(schema)) {
-      config.type = 'Number'
-      if (schema.default) config.default = schema.default
-      if (schema.enum) config.allowedValues = schema.enum
-    }
-    else {
-      config.type = 'String' // Fallback for unsupported types
-    }
-    
-    return config
-  }
-
-  // Convert property name to camelCase
-  function ToCamelCase(str: string) {
-    return str.toLowerCase()
-      .split('_')
-      .map((word, index) => index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1))
-      .join('')
-  }
-
-  // Process object properties
-  function Object(schema: Types.TObject): string[] {
-      const parameters: string[] = []
-
-      const props = schema["properties"];
-      //console.log("PROPS1",props)
-      const properties = globalThis.Object.keys(schema.properties).reduce((acc, key) => {
-          //console.log("DEBUG2", acc, "KEY", key);
-          const paramName = ToCamelCase(key);
-	  const property = schema.properties[key]
-          const config = GetParameterConfig(property, key);
-          // const paramCode = `
-          // const ${paramName}Param = new cdk.CfnParameter(this, '${key}', {
-          //   type: '${config.type}',
-          //   description: '${config.description}',${config.default !== undefined ? `
-          //   default: '${config.default}',` : ''}${config.allowedValues ? `
-          //   allowedValues: ${JSON.stringify(config.allowedValues)},` : ''}
-          // });`;
-          //parameters.push(paramCode);
-	  
-	  let cfnYamlDefault = ""
-	  if (config.default) {
-	      cfnYamlDefault = `Default: '${config.default}'`;
-	  }
-	  const cfnYaml =  `
-  ${paramName}:
-    Type: '${config.type}'
-    Description: '${config.description}'
-    ${cfnYamlDefault}`;
-	      console.log(cfnYaml)	  ;
-      });
-
-      
-      return parameters
-  }
-
-  // Main visitation function
-  function Visit(schema: Types.TSchema): string[] {
-    if (Types.TypeGuard.IsObject(schema)) return Object(schema)
-    return [] // Only handling objects for now, can be extended for other types
-  }
-
-  export function Generate(model: TypeBoxModel): string {
-    const buffer: string[] = [    ]
-
-    for (const type of model.types.filter((type) => Types.TypeGuard.IsObject(type) && type.$id)) {
-      const className = `${type.$id.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}Stack`
-      buffer.push(
-        `export class ${className} extends cdk.Stack {`,
-        `  constructor(scope: Construct, id: string, props?: cdk.StackProps) {`,
-        `    super(scope, id, props);`,
-        ``
-      )
-      
-      const parameters = Visit(type)
-      buffer.push(...parameters.map(p => p.split('\n').map(line => `    ${line}`).join('\n')))
-      
-      buffer.push(
-        `  }`,
-        `}`,
-        ``
-      )
-    }
-
-      //"FIXME"
-      buffer.join('\n')
-      
-  }
-}
-
 
 export namespace ModelToSSMParameters {
     function GetParameterConfig(schema: Types.TSchema, name: string) {
@@ -211,7 +98,12 @@ export namespace ModelToSSMParameters {
       .map((word, index) => index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1))
       .join('')
   }
-
+  function ToCamelCase2(str: string) {
+    return str.toLowerCase()
+      .split('_')
+      .map((word, index) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('')
+  }
   // Process object properties
   function Object(schema: Types.TObject): string[] {
       const parameters: string[] = []
@@ -221,23 +113,14 @@ export namespace ModelToSSMParameters {
       const properties = globalThis.Object.keys(schema.properties).reduce((acc, key) => {
           //console.log("DEBUG2", acc, "KEY", key);
           const paramName = ToCamelCase(key);
+	  const paramName2 = ToCamelCase2("Agent_Param_"+key);
+	  const hasParamName = ToCamelCase2("Has__"+key);
+	  
 	  const property = schema.properties[key]
           const config = GetParameterConfig(property, key);
 	  
-	  let cfnYamlDefault = ""
-	  if (config.default) {
-	      cfnYamlDefault = `  Default: '${config.default}'`;
-	  }
-	  const cfnYaml =  `
-  Agent${paramName}Parameter:
-    Type: 'AWS::SSM::Parameter'
-    Properties:
-      Name: !Sub '\${AgentCodeName}_${paramName}'
-      Type: 'String'
-      Value: !Ref ${paramName}
-      Tier: 'Standard'
-      Description: '${config.description}'`;
-	  console.log(cfnYaml)	  ;
+	  const cfnYaml =  `  ${hasParamName}: !Not [!Equals [!Ref ${paramName}, ""]]`
+	  console.log(cfnYaml)
       });
 
       
@@ -286,8 +169,8 @@ parsed.declarations.forEach(declaration => {
 //o	    console.log('TypeScript To Inline Model', model)
 
 	    
-	    const code2 = ModelToCdkParameters.Generate(model)
-
+	    //const code2 = ModelToCdkParameters.Generate(model)
+	    const ssm = ModelToSSMParameters.Generate(model)
 	    
 	    //oconsole.log('Model To CDK', code2);
 	    // console.log('Model To JsonSchema Inline', Codegen.ModelToJsonSchema.Generate(model))

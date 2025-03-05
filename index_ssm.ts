@@ -117,20 +117,19 @@ export namespace ModelToSSMParameters {
 	  
 	  const property = schema.properties[key]
           const config = GetParameterConfig(property, key);
-	  
+	  const hasParamName = ToCamelCase2("Has__"+key);	  
 
 	  const cfnYaml =  `
-  ConditionalResource:
-    Condition: ${paramName}
     ${paramName2}Parameter:
-    Type: 'AWS::SSM::Parameter'
-    Properties:
-      Name: !Sub '\${AgentCodeName}_${key}'
-      Type: 'String'
-      Value: !Ref ${paramName}
-      Tier: 'Standard'
-      Description: '${config.description}'`;
-	  console.log(cfnYaml)	  ;
+      Type: 'AWS::SSM::Parameter'
+      Condition: ${hasParamName}
+      Properties:
+        Name: !Sub '\${AgentCodeName}_${key}'
+        Type: 'String'
+        Value: !Ref ${paramName}
+        Tier: 'Standard'
+        Description: '${config.description}'`;
+console.log(cfnYaml)	  ;
       });
 
       
