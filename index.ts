@@ -31,7 +31,6 @@ function ToCamelCase2(str: string) {
 
 export namespace ModelToCdkParameters {
     function GetParameterConfig(schema: Types.TSchema, name: string) {
-	console.log("GPC");
 	const config: Record<string, any> = {
 	    description: `Parameter for ${name}`
 	}
