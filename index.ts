@@ -109,7 +109,9 @@ export namespace ModelToCdkParameters {
   }
 
   function ObjectHas(hasParamName: string, paramName: string): string {
-    return  `  ${hasParamName}: !Not [!Equals [!Ref ${paramName}, ""]]`
+      return  `
+  ${hasParamName}: !Not [!Equals [!Ref ${paramName}, ""]]
+`
   }
 
   // Main visitation function
@@ -121,7 +123,12 @@ export namespace ModelToCdkParameters {
 
   export function Generate(model: TypeBoxModel): string {
     const buffer: string[] = [ ]
-      let parameters : string[] =[]
+      let parameters : string[] =[`
+  AgentCodeName:
+    Type: 'String'
+    Description: 'Agent codename for finding parameters'
+    Default: 'tine_agent_2'
+`]
       let conditionals :string[] =[]
       let resources : string[] =[]
 
