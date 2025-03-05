@@ -1,5 +1,5 @@
 
-console.log("Hello via Bun!");
+
 import { TypescriptParser } from 'typescript-parser';
 const parser = new TypescriptParser();
 import * as Codegen from '@sinclair/typebox-codegen'
@@ -118,12 +118,11 @@ export namespace ModelToSSMParameters {
 	  const property = schema.properties[key]
           const config = GetParameterConfig(property, key);
 	  
-	  let cfnYamlDefault = ""
-	  if (config.default) {
-	      cfnYamlDefault = `  Default: '${config.default}'`;
-	  }
+
 	  const cfnYaml =  `
-  ${paramName2}Parameter:
+  ConditionalResource:
+    Condition: ${paramName}
+    ${paramName2}Parameter:
     Type: 'AWS::SSM::Parameter'
     Properties:
       Name: !Sub '\${AgentCodeName}_${key}'

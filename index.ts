@@ -129,7 +129,7 @@ export namespace ModelToCdkParameters {
 	  
 	  let cfnYamlDefault = ""
 	  if (config.default) {
-	      cfnYamlDefault = `  Default: '${config.default}'`;
+	      cfnYamlDefault = `Default: '${config.default}'`;
 	  }
 	  const cfnYaml =  `
   ${paramName}:

@@ -10,6 +10,9 @@ bun install
 
 To run:
 
-```bash
-bun run index.ts --path="../synapzeai-eliza-zos/app/src/types/agent-enviroment-v1.ts" `
 ```
+bun run index.ts --path=../synapzeai-eliza-zos/app/src/types/agent-enviroment-v1.ts
+bun run index_ssm.ts --path=../synapzeai-eliza-zos/app/src/types/agent-enviroment-v1.ts
+
+```
+
