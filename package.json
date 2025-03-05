@@ -1,0 +1,18 @@
+{
+  "name": "synapzeai-eliza-zos-introspector",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@sinclair/typebox-codegen": "^0.10.5",
+    "argv": "^0.0.3",
+    "ts-json-schema-generator": "^2.3.0",
+    "typescript-json-schema": "^0.65.1",
+    "typescript-parser": "^2.6.1"
+  }
+}
